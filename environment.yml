@@ -1,0 +1,12 @@
+# yaml file for conda env containing openai
+
+name: tts
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+    - openai
+    - gTTS
