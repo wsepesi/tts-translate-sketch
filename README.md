@@ -1,4 +1,4 @@
-Build on top of https://github.com/marquisdepolis/audiochat to rework the flow to reesult in a python script that can be run from the CLI.
+Build on top of https://github.com/marquisdepolis/audiochat to rework the flow to reesult in a python script that can be run from the CLI. All credit to @marquisdepolis for the initial draft
 
 Lightweight solution to a Japanese student who moved in with my host family in Paris for a few weeks, who speaks practically no French or English.
 
