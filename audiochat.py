@@ -50,8 +50,13 @@ CHUNK = 1024
 
 
 def record_audio(seconds=8):
-    print("Recording...")
-    myrecording = sd.rec(int(seconds * 16000), samplerate=16000, channels=1, dtype='int16')
+    if seconds == '':
+        seconds = 8
+    print(f"Recording for {str(seconds)} seconds...")
+    myrecording = sd.rec(int(int(seconds) * 16000), samplerate=16000, channels=1, dtype='int16')
+    # myrecording = sd.rec(int(seconds * 100 * 16000), samplerate=16000, channels=1, dtype='int16')
+    # record for 8 seconds, without using the variable
+    # myrecording = sd.rec(
     sd.wait()
     print("Done recording.")
     return myrecording
@@ -146,7 +151,8 @@ if __name__ == "__main__":
             user_input = input("Japanese or English? (j/e): ")
             selection = user_input[-1]
             time = user_input[:-1]
-            print(selection, time)
+
+            # print(selection, time)
 
             if selection == 'j':
                 print("Japanese mode selected.")
