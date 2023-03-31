@@ -176,7 +176,7 @@ if __name__ == "__main__":
             elif selection == 'e':
                 print("English mode selected.")
                 if DIRECT:
-                    translation = transcribe_audio(audio_data, jp=True)
+                    translation = transcribe_audio(audio_data, manual_jp=True)
                     print(f"Translation: {translation}")
                     synthesized_speech = synthesize_speech_with_whisper(translation, jp=True)
                 else:
