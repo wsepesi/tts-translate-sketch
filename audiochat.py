@@ -12,6 +12,7 @@ from gtts import gTTS
 import os
 import dotenv
 import sounddevice as sd
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +145,13 @@ def get_translation(text, jp=False):
 #     print("Done playing audio.")
 
 if __name__ == "__main__":
-    DIRECT = False
+    # take in a flag -e for experimental mode using argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-e", "--experimental", help="use experimental mode", action="store_true")
+    args = parser.parse_args()
+
+    # check if in experimental mode
+    DIRECT = args.experimental
     while(True):
         try:
             # branch on whether the user inputs 'j' or 'e'
@@ -168,12 +175,17 @@ if __name__ == "__main__":
                 # play_audio(synthesized_speech)
             elif selection == 'e':
                 print("English mode selected.")
-                audio_data = record_audio(seconds=time)
-                transcription = transcribe_audio(audio_data)
-                print(f"Transcription: {transcription}")
-                translation = get_translation(transcription)
-                print(f"Translation: {translation}")
-                synthesized_speech = synthesize_speech_with_whisper(translation, jp=True)
+                if DIRECT:
+                    translation = transcribe_audio(audio_data, jp=True)
+                    print(f"Translation: {translation}")
+                    synthesized_speech = synthesize_speech_with_whisper(translation, jp=True)
+                else:
+                    audio_data = record_audio(seconds=time)
+                    transcription = transcribe_audio(audio_data)
+                    print(f"Transcription: {transcription}")
+                    translation = get_translation(transcription)
+                    print(f"Translation: {translation}")
+                    synthesized_speech = synthesize_speech_with_whisper(translation, jp=True)
                 # play_audio(synthesized_speech)
             else:
                 print("Exiting...")
