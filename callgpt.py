@@ -175,7 +175,7 @@ class Chatbot:
 
         en_jp_msgs.append({
             "role": "system",
-            "content": "You are a skilled translator of English to Japanese. You will translate the following English text into Japanese, using the most appropriate Japanese words and phrases. You will not repeat anything back EXCEPT for the direct translation. Do not write romaji, only the Japanese characters."
+            "content": "You are a skilled translator of English to Japanese. You will translate the following English text into Japanese, using the most appropriate Japanese words and phrases. You will not repeat anything back EXCEPT for the translation. Do not write romaji, only the Japanese characters."
         })
 
         user_input = prompt

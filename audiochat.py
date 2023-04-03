@@ -13,6 +13,8 @@ import os
 import dotenv
 import sounddevice as sd
 import argparse
+import threading
+import time as timer
 
 logger = logging.getLogger(__name__)
 
@@ -51,19 +53,44 @@ CHUNK = 1024
 
 
 def record_audio(seconds=8):
-    if seconds == '':
-        seconds = 8
-    print(f"Recording for {str(seconds)} seconds...")
-    myrecording = sd.rec(int(int(seconds) * 16000), samplerate=16000, channels=1, dtype='int16')
-    # myrecording = sd.rec(int(seconds * 100 * 16000), samplerate=16000, channels=1, dtype='int16')
-    # record for 8 seconds, without using the variable
-    # myrecording = sd.rec(
-    sd.wait()
+    if seconds == 'c':
+        data = record_audio_async()
+        return data
+    else:
+        if seconds == '':
+            seconds = 8
+        print(f"Recording for {str(seconds)} seconds...")
+        myrecording = sd.rec(int(int(seconds) * 16000), samplerate=16000, channels=1, dtype='int16')
+        sd.wait()
+        print("Done recording.")
+        return myrecording
+
+# record_audio_async: records audio asynchronously for one minute, offering the user the ability to input 'x' to stop recording and return the audio data up until that point
+def record_audio_async():
+    print("Recording for 1 minute...")
+    myrecording = None
+    myrecording = sd.rec(int(60 * 16000), samplerate=16000, channels=1, dtype='int16')
+    stop_event = threading.Event()
+
+    def check_input():
+        nonlocal stop_event
+        while not stop_event.is_set():
+            user_input = input()
+            if user_input == 'x':
+                stop_event.set()
+
+    input_thread = threading.Thread(target=check_input)
+    input_thread.start()
+
+    while not stop_event.is_set():
+        timer.sleep(0.1)  # Wait for 0.1 seconds before checking stop_event again
+
     print("Done recording.")
-    return myrecording
+    return myrecording 
 
 
 def transcribe_audio(audio_data, jp=False, manual_jp=False):
+    print('Transcribing audio...')
     # save sd recording to a temporary wav file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
         with wave.open(temp_file.name, 'wb') as wf:
@@ -175,12 +202,12 @@ if __name__ == "__main__":
                 # play_audio(synthesized_speech)
             elif selection == 'e':
                 print("English mode selected.")
+                audio_data = record_audio(seconds=time)
                 if DIRECT:
                     translation = transcribe_audio(audio_data, manual_jp=True)
                     print(f"Translation: {translation}")
                     synthesized_speech = synthesize_speech_with_whisper(translation, jp=True)
                 else:
-                    audio_data = record_audio(seconds=time)
                     transcription = transcribe_audio(audio_data)
                     print(f"Transcription: {transcription}")
                     translation = get_translation(transcription)
