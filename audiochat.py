@@ -15,6 +15,10 @@ import sounddevice as sd
 import argparse
 import threading
 import time as timer
+import sys
+import tty
+import termios
+import select
 
 logger = logging.getLogger(__name__)
 
@@ -68,16 +72,41 @@ def record_audio(seconds=8):
 # record_audio_async: records audio asynchronously for one minute, offering the user the ability to input 'x' to stop recording and return the audio data up until that point
 def record_audio_async():
     print("Recording for 1 minute...")
-    myrecording = None
+    myrecording = None # reset myrecording to None... may not be necessary
+    # get current time down to the millisecond
+    start_time = timer.time()
+    end_time: float = 0.0
     myrecording = sd.rec(int(60 * 16000), samplerate=16000, channels=1, dtype='int16')
     stop_event = threading.Event()
 
+    # def check_input():
+    #     nonlocal stop_event
+    #     while not stop_event.is_set():
+    #         user_input = input()
+    #         if user_input == 'x':
+    #             stop_event.set()
+    #             nonlocal end_time
+    #             end_time = timer.time()
+
     def check_input():
+        """
+        Complicated version of check_input that allows the user to stop recording by pressing 'x' without having to press enter.
+        Process shouldn't be blocking, but there may be unforseen errors.
+        """
         nonlocal stop_event
-        while not stop_event.is_set():
-            user_input = input()
-            if user_input == 'x':
-                stop_event.set()
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            while not stop_event.is_set():
+                if select.select([sys.stdin], [], [], 0.0)[0]:
+                    user_input = sys.stdin.read(1)
+                    if user_input == 'x':
+                        stop_event.set()
+                        nonlocal end_time
+                        end_time = timer.time()
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
     input_thread = threading.Thread(target=check_input)
     input_thread.start()
@@ -86,6 +115,9 @@ def record_audio_async():
         timer.sleep(0.1)  # Wait for 0.1 seconds before checking stop_event again
 
     print("Done recording.")
+    # trim the audio data to the time that the user stopped recording
+    myrecording = myrecording[:int((end_time - start_time) * 16000)]
+    # print(myrecording.shape)
     return myrecording 
 
 
