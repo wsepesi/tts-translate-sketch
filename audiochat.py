@@ -57,7 +57,7 @@ CHUNK = 1024
 
 
 def record_audio(seconds=8):
-    if seconds == 'c':
+    if seconds == 'c' or seconds == '':
         data = record_audio_async()
         return data
     else:
